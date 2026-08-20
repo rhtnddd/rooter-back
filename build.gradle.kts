@@ -20,12 +20,15 @@ repositories {
 }
 
 dependencies {
-    // logging, structure, ktor
+    // logging
     implementation("ch.qos.logback:logback-classic:1.5.32")
 
+    // koin
     implementation("io.insert-koin:koin-ktor:$koinVersion")
     implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
 
+    // ktor
+    // TODO 의존성이 증식하고 있음. 조만간 gradle 버전 카탈로그로 바꾸는게 나을지도
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("io.ktor:ktor-server-core:$ktorVersion")
@@ -44,12 +47,13 @@ dependencies {
 
     implementation("org.jetbrains.exposed:exposed-core:${exposedVersion}")
     implementation("org.jetbrains.exposed:exposed-dao:${exposedVersion}")
-    implementation("org.jetbrains.exposed:exposed-java-time:${exposedVersion}")
-    implementation("org.mindrot:jbcrypt:0.4")
-    // exposed jdbc driver using different version name
     implementation("org.jetbrains.exposed:exposed-jdbc:${exposedVersion}")
+    implementation("org.jetbrains.exposed:exposed-java-time:${exposedVersion}")
 
     implementation("org.postgresql:postgresql:42.7.2")
+
+    implementation("org.mindrot:jbcrypt:0.4")
+
     //jwt
     implementation("com.auth0:java-jwt:4.4.0")
 
