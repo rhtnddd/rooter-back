@@ -4,6 +4,7 @@ import com.github.nepyh.rooter.module.planboard.dto.PlanBoardCreateRequest
 import com.github.nepyh.rooter.module.planboard.dto.PlanBoardResponse
 import com.github.nepyh.rooter.module.planboard.exception.PlanBoardValidationException
 import com.github.nepyh.rooter.module.planboard.model.PlanBoards
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.experimental.newSuspendedTransaction
@@ -11,8 +12,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class PlanBoardService {
-    suspend fun getAllBoards(): List<PlanBoardResponse> = newSuspendedTransaction {
-        PlanBoards.selectAll().map {
+    suspend fun getAllBoards(userId: Int): List<PlanBoardResponse> = newSuspendedTransaction {
+        PlanBoards.selectAll()
+            .where { PlanBoards.userId eq userId }
+            .map {
             PlanBoardResponse(
                 id = it[PlanBoards.id],
                 title = it[PlanBoards.title],
@@ -22,7 +25,7 @@ class PlanBoardService {
         }
     }
 
-    suspend fun createBoard(request: PlanBoardCreateRequest): Int {
+    suspend fun createBoard(userId: Int, request: PlanBoardCreateRequest): Int {
         if (request.title.isBlank() || request.title.length > 100) {
             throw PlanBoardValidationException.InvalidTitleException()
         }
@@ -38,7 +41,7 @@ class PlanBoardService {
 
         return newSuspendedTransaction {
             PlanBoards.insert {
-                it[userId] = 1
+                it[this.userId] = userId
                 it[title] = request.title
                 it[this.startDate] = startDate
                 it[this.endDate] = endDate

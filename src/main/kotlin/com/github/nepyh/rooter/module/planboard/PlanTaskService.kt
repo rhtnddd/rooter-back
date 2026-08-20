@@ -41,9 +41,9 @@ class PlanTaskService {
             DailyPlanResponse(planDate = date.toString(), tasks = tasks)
         }
 
-    suspend fun createTask(request: PlanTaskCreateRequest) = newSuspendedTransaction {
+    suspend fun createTask(userId: Int, request: PlanTaskCreateRequest) = newSuspendedTransaction {
         val board = PlanBoards.selectAll()
-            .where { PlanBoards.id eq request.planBoardId }
+            .where { (PlanBoards.id eq request.planBoardId) and (PlanBoards.userId eq userId) }
             .firstOrNull()
             ?: throw PlanBoardNotFoundException()
 
@@ -54,10 +54,14 @@ class PlanTaskService {
         val date = runCatching { LocalDate.parse(request.planDate) }
             .getOrElse { throw PlanTaskValidationException.InvalidPlanDateException() }
 
-        val startTime = runCatching { LocalTime.parse(request.startTime) }
+        val startTime = runCatching { LocalTime.parse(request.startTime, timeFormat) }
             .getOrElse { throw PlanTaskValidationException.InvalidTimeFormatException() }
-        val endTime = runCatching { LocalTime.parse(request.endTime) }
+        val endTime = runCatching { LocalTime.parse(request.endTime, timeFormat) }
             .getOrElse { throw PlanTaskValidationException.InvalidTimeFormatException() }
+
+        if (!endTime.isAfter(startTime)) {
+            throw PlanTaskValidationException.InvalidTimeRangeException()
+        }
 
         if (request.estimatedMinutes < 1) {
             throw PlanTaskValidationException.InvalidEstimatedMinutesException()
